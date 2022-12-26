@@ -65,13 +65,17 @@ print(agent)
 play_policy(agent, 3000)
 print(agent)
 agent.plot_stats()
+agent.plot_observations_actions()
 env.close()
 
 print(agent.q_table_string())
 agent.stop_learning()
-env = gym.make(ENV_NAME, render_mode="human")
+env = gym.make(ENV_NAME)
+agent.stats.actions = []
+agent.stats.observations = []
 play_policy(agent, 100)
 agent.plot_stats()
+agent.plot_observations_actions()
 env.close()
 
 # For Video

@@ -36,7 +36,8 @@ class q_learner:
         self.stats.best_score = 0
         self.stats.epsilon_values = []
         self.stats.stop_learning = []
-
+        self.stats.actions = []
+        self.stats.observations = []
         self.q_table = np.zeros((num_states, num_actions))
         
     def __str__(self) -> str:
@@ -116,6 +117,7 @@ class q_learner:
             else:
                 self.epsilon += self.epsilon_change
         """
+
     def end_episode(self):
 
         if self.score > self.stats.best_score:
@@ -163,6 +165,35 @@ class q_learner:
 
         plt.show()
 
+    def plot_observations_actions(self):
+
+        observations_0s_x = []
+        observations_0s_y = []
+        observations_1s_x = []
+        observations_1s_y = []
+
+        for index, action in enumerate(self.stats.actions):
+            if action == 0:
+                observations_0s_x.append(self.stats.observations[index][0])
+                observations_0s_y.append(self.stats.observations[index][1])
+            else:
+                observations_1s_x.append(self.stats.observations[index][0])
+                observations_1s_y.append(self.stats.observations[index][1])                             
+
+        plt.plot(observations_0s_x, observations_0s_y, color="orange", label="0s", linestyle=" ", marker=".")
+        plt.plot(observations_1s_x, observations_1s_y, color="purple", label="1s", linestyle=" ", marker=".")
+
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3)
+
+        plt.show()
+
+        plt.plot(observations_0s_x, observations_0s_y, color="orange", label="0s", linestyle=" ", marker=",")
+        plt.plot(observations_1s_x, observations_1s_y, color="purple", label="1s", linestyle=" ", marker=",")
+
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=3)
+
+        plt.show()
+
     def policy(self, observation) -> int:
 
         state = self.get_state(observation)
@@ -176,6 +207,9 @@ class q_learner:
             
         self.last_state = state
         self.last_action = action
+
+        self.stats.observations.append(observation)
+        self.stats.actions.append(action)
 
         return action
 
