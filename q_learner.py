@@ -1,8 +1,10 @@
+from __future__ import annotations
+from types import SimpleNamespace
+
 import numpy as np
 import math
+import pickle
 import matplotlib.pyplot as plt
-
-from types import SimpleNamespace
 
 def moving_avg(array, windows_size):
     windows_size = round(windows_size)
@@ -15,6 +17,8 @@ def moving_avg(array, windows_size):
     return result
 
 class q_learner:
+
+    EXPORT_PATH: str = "./ex.port"
 
     def __init__(self, num_states: int, num_actions: int, epsilon: float, alpha: float, gamma: float, epsilon_change: float, epsilon_min) -> None:
 
@@ -62,6 +66,15 @@ class q_learner:
     def __repr__(self) -> str:
         return self.__str__()
 
+    def _export(self) -> None:
+        with open(self.EXPORT_PATH, "wb") as file:
+            pickle.dump(self, file)
+    
+    @staticmethod
+    def _import() -> q_learner:
+        with open(q_learner.EXPORT_PATH, "rb") as file:
+            return pickle.load(file)
+
     def q_table_string(self):
         string = f"  + {'     '.join([f'{i:3}' for i in range(0, self.num_actions)])}\n"
 
@@ -76,6 +89,25 @@ class q_learner:
     def stop_learning(self):
         self.keep_learning = False
         self.stats.stop_learning.append(len(self.stats.scores))
+
+    # TODO smth like this?
+    '''
+    substates = [
+        SimpleNamespace(name="track_posistion", count=21, min=-1.3, max=1.3),
+        SimpleNamespace(name="angle", count=21, min=-np.pi/2, max=np.pi/2)
+    ]
+
+    def get_substate(self, value, state_count, state_length):
+        substate_index = state_count
+
+        substate = np.digitize(value, self.substates[0].bins) - 1
+        substate = 0 if substate < 0 else substate
+        substate = self.substates[substate_index].count - 1 if substate > self.substates[substate_index].count - 1 else substate
+
+        assert substate >= 0 and substate <= self.substates[substate_index].count - 1
+
+        return substate
+    '''
 
     def get_substate(self, value, state_count, state_length):
         negative = True if value < 0 else False
@@ -127,7 +159,8 @@ class q_learner:
         self.stats.scores.append(self.score)
 
         if len(self.stats.scores) % 100 == 0 and len(self.stats.scores) != 0:
-            print(f"Episode: {len(self.stats.scores)}, Total Best: {self.stats.best_score}, Last 100 Best: {max(self.stats.scores[-100:-1])}, Last 100 Averge: {np.average(self.stats.scores[-100:-1]):.1f}, Last 100 Min: {min(self.stats.scores[-100:-1]):.1f}, Epsilon: {self.epsilon:.3f}")
+            print(f"Episode: {len(self.stats.scores)}, Total Best: {self.stats.best_score}, Last 100 Best: {max(self.stats.scores[-100:])}, Last 100 Averge: {np.average(self.stats.scores[-100:]):.1f}, Last 100 Min: {min(self.stats.scores[-100:]):.1f}, Epsilon: {self.epsilon:.3f}")
+            self._export()
 
         self.epsilon_deacy()
 
@@ -201,7 +234,7 @@ class q_learner:
         random = np.random.uniform()
 
         if self.keep_learning and random < self.epsilon:
-            action = np.random.randint(2)
+            action = np.random.randint(self.num_actions)
         else:
             action = np.argmax(self.q_table[state])
             

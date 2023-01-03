@@ -10,7 +10,7 @@ class cartpole_learner(q_learner):
     def get_state_simple(self, observation):
 
         pole_angle = observation[2]
-        pole_angle_state_count = 21          
+        pole_angle_state_count = 21       
         pole_angle_state = self.get_substate(pole_angle, pole_angle_state_count, 0.418 * 2 / pole_angle_state_count)
 
         pole_velocity = observation[3]    
